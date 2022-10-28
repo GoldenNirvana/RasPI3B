@@ -2,7 +2,7 @@
 import datetime
 import math
 import time
-
+import tkinter as tk
 
 ioPorts = [3, 5, 7, 8, 10,
            11, 12, 13, 15, 16, 18, 19, 21, 22, 23, 24, 26, 29, 31, 32, 33, 35, 36, 37, 38, 40]
@@ -43,7 +43,7 @@ class IoPort(object):
 
     def lightOn(self):
         if self.__voltage == 1:
-            print('Порт ', self.__ioPort,' два раза зажгли одно и то же!!!\n')
+            print('Порт ', self.__ioPort, ' два раза зажгли одно и то же!!!\n')
             exit(3)
         self.__voltage = 1
         print('Порт номер ', self.__ioPort, ' светится\n')
@@ -206,6 +206,47 @@ class Clock:
                 temp_hours.lightOff()
 
 
+def doClock(portS):
+    Clock(portS)
+
+
+def doTimer(portS):
+    timer(portS, 0, 10)
+
+
+def doStopwatch(portS, app):
+    secundomer(portS)
+
+
+def doGui(ports):
+    window = tk.Tk()
+    window.minsize(800, 600)
+    window.maxsize(800, 600)
+    w = 25
+    h = 11
+    for i in range(2):
+        window.columnconfigure(i, weight=1, minsize=75)
+        window.rowconfigure(i, weight=1, minsize=50)
+        for j in range(0, 2):
+            frame = tk.Frame(
+                master=window,
+                relief=tk.RAISED,
+                borderwidth=1
+            )
+            frame.grid(row=i, column=j, padx=5, pady=5)
+            if i == 0 and j == 0:
+                label = tk.Button(master=frame, text='Часы', command=lambda: doClock(ports), width=w, height=h)
+            elif i == 0 and j == 1:
+                label = tk.Button(master=frame, text='Таймер', command=lambda: doTimer(ports), width=w, height=h)
+            elif i == 1 and j == 0:
+                label = tk.Button(master=frame, text='Секундомер', command=lambda: doStopwatch(ports, window), width=w,
+                                  height=h)
+            else:
+                label = tk.Button(master=frame, text='Будильник', width=w, height=h)
+            label.pack(padx=5, pady=5)
+    window.mainloop()
+
+
 def main():
     check()
     # IO.setmode(IO.BOARD)
@@ -215,6 +256,7 @@ def main():
     if len(ports) != 12:
         print("ПОРТОВ МНОГО ИЛИ МАЛО РАЗБЕРИСЬ\n (12)")
         exit(3)
+    doGui(ports)
 
     return 0
 
