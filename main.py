@@ -137,37 +137,50 @@ def timer(ports, start_minutes, start_seconds):
     if type(start_minutes) != int or type(start_seconds) != int:
         print("НЕКОРРЕКТНОЕ ЧИСЛО")
         return
-    if start_minutes < 0 or start_minutes > 59:
+    if start_minutes < 0 or start_minutes > 11:
         print("НЕКОРРЕКТНОЕ КОЛИЧЕСТВО МИНУТ")
         return
     if start_seconds < 0 or start_seconds > 59:
         print("НЕКОРРЕКТНОЕ КОЛИЧЕСТВО СЕКУНД")
         return
-    equals = False
-    sec_delta = start_seconds - (start_seconds // 5) * 5
+    is_first_iteration = True
+    is_equals = False
     minutes_port = start_minutes
-    sec_port = start_seconds // 5 + 1
+    sec_port = start_seconds // 5
     while minutes_port >= 0:  # Цикл по всему времени
         if minutes_port != 0:
             ports[minutes_port].lightOn()
         while sec_port >= 0:  # Цикл по секундам в рамках одной минуты
-            if sec_port == minutes_port and minutes_port != 0:
-                ports[minutes_port].lightOff()
-                equals = True
             sec = 0
             sec_delta = 5
-            while sec < sec_delta:  # Цикл по 5 секундам (мигание одной лампочки)
-                ports[sec_port].lightOn()
-                debugShow(ports)
-                time.sleep(0.3)
-                ports[sec_port].lightOff()
-                time.sleep(0.7)
-                sec = sec + 1
-            sec_port = sec_port - 1
+            if is_first_iteration:
+                sec_delta = start_seconds - (start_seconds // 5) * 5
+                is_first_iteration = False
 
-            if equals:
+            if sec_port == minutes_port and minutes_port != 0:
+                num_iter = 0
+                while sec < sec_delta:  # Цикл по 5 секундам (мигание одной лампочки), когда минуты совпали с секундами
+                    if num_iter != 0:
+                        ports[sec_port].lightOn()
+                    num_iter = num_iter + 1
+                    is_equals = True
+                    debugShow(ports)
+                    time.sleep(0.3)
+                    ports[sec_port].lightOff()
+                    time.sleep(0.7)
+                    sec = sec + 1
+            else:
+                while sec < sec_delta:  # Цикл по 5 секундам (мигание одной лампочки)
+                    ports[sec_port].lightOn()
+                    debugShow(ports)
+                    time.sleep(0.3)
+                    ports[sec_port].lightOff()
+                    time.sleep(0.7)
+                    sec = sec + 1
+            sec_port = sec_port - 1
+            if is_equals:
                 ports[minutes_port].lightOn()
-                equals = False
+                is_equals = False
         sec_port = 11
         if minutes_port != 0:
             ports[minutes_port].lightOff()
@@ -176,17 +189,8 @@ def timer(ports, start_minutes, start_seconds):
     # Вызов звукового сигнала TODO
 
 
-def secundomer():
-    ports = []
+def secundomer(ports):
     sec = 0
-    for i in range(0, 12):
-        ports.append(IoPort(ioPorts[i]))
-    if len(ports) != 12:
-        print("ПОРТОВ МНОГО ИЛИ МАЛО РАЗБЕРИСЬ\n (12)")
-        exit(3)
-
-    timer(ports, 1, 3)
-
     while True:
         for i in range(0, 12):
             for j in range(0, 5):
@@ -198,41 +202,38 @@ def secundomer():
                 ports[i].lightOff()
                 debugShow(ports)
 
-
-#   Устанавливает будильник. alarm_time -
-#   либо строка формата "день час:минута", например "17 23:12".
-#   либо если очень повезёт datetime
-#   перегрузка функции на этом недоязыке, видимо, выглядит так
-def setUpAlarm(ports, alarm_time_raw):
-    if isinstance(alarm_time_raw, str):
-        alarm_time_parsed = datetime.datetime.strptime(alarm_time_raw, '%d %H:%M')
-        # Передаём только день и время, остальные параметры берём из текущего времени
-        alarm_time = datetime.datetime.now().replace(day=alarm_time_parsed.day, hour=alarm_time_parsed.hour,
-                                                     minute=alarm_time_parsed.minute)
-    else:
-        alarm_time = alarm_time_raw
-    delay = alarm_time - datetime.datetime.now()
-    if delay.total_seconds() < 0:
-        print(f"Будильник: неправильно передано время {alarm_time_parsed}")
-        return
-    threading.Timer(delay.total_seconds(), lambda: alarm(ports)).start()
-    print(f"Будильник: успешно установлен на время {alarm_time}. Зазвонит через {delay.total_seconds()} сек")
+                # тут можно написать число секунд, до скольки будет секундомер считать
+                # или можно просто стереть, тогда будет бесконечнл считать
+                if sec == 30:
+                    return
 
 
-def alarm(ports):
-    blink_interval = 0.3
-    delay_next = 0.1
-    circle_count = 30
-    for flick in range(circle_count):
-        for port in ports:
-            threading.Thread(target=port.blink, args=[blink_interval]).start()
-            time.sleep(delay_next)
+class Clock:
 
+    def __init__(self, io_ports_for_clock):
+        self.__hourNow = datetime.datetime.now().time().hour
+        self.__minuteNow = datetime.datetime.now().time().minute
+        self.__secondNow = datetime.datetime.now().time().second
+        self.__IoPorts = io_ports_for_clock
+        self.startClock()
 
-def debugInRealTime(ports):
-    while True:
-        debugShow(ports)
-        time.sleep(0.1)
+    def startClock(self):
+        while 1:
+            temp_hours = self.__IoPorts[self.__hourNow % 12]
+            if not self.__IoPorts[self.__hourNow % 12].isLightOn():
+                self.__IoPorts[self.__hourNow % 12].lightOn()
+            if self.__hourNow % 12 != math.floor(self.__minuteNow / 5):
+                self.__IoPorts[math.floor(self.__minuteNow / 5)].lightOn()
+            debugShow(self.__IoPorts)
+            time.sleep(0.5)
+            if self.__hourNow % 12 != math.floor(self.__minuteNow / 5):
+                self.__IoPorts[math.floor(self.__minuteNow / 5)].lightOff()
+            debugShow(self.__IoPorts)
+            time.sleep(0.5)
+            self.__minuteNow = datetime.datetime.now().time().minute
+            self.__hourNow = datetime.datetime.now().time().hour
+            if self.__IoPorts[self.__hourNow % 12].get() != temp_hours.get():
+                temp_hours.lightOff()
 
 
 def main():
