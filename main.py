@@ -91,7 +91,6 @@ class IoPort(object):
         self.inverse()
 
 
-
 def outForDebug(boolean):
     if boolean:
         print(1, end=' ')
@@ -217,9 +216,6 @@ def setUpAlarm(ports, alarm_time_raw):
         print(f"Будильник: неправильно передано время {alarm_time_parsed}")
         return
     threading.Timer(delay.total_seconds(), lambda: alarm(ports)).start()
-    while True:
-        debugShow(ports)
-        time.sleep(0.05)
     print(f"Будильник: успешно установлен на время {alarm_time}. Зазвонит через {delay.total_seconds()} сек")
 
 
@@ -233,7 +229,10 @@ def alarm(ports):
             time.sleep(delay_next)
 
 
-
+def debugInRealTime(ports):
+    while True:
+        debugShow(ports)
+        time.sleep(0.1)
 
 
 def main():
@@ -251,10 +250,11 @@ def main():
     debugShow(ports)
 
     # Будильник
-    alarm_delay_in_secs = 5
+    alarm_delay_in_secs = 10
     alarm_time = datetime.datetime.now()
     alarm_time += datetime.timedelta(seconds=alarm_delay_in_secs)
     setUpAlarm(ports, alarm_time)
+    # threading.Timer(10, debugInRealTime, args=[ports]).start() #Раскомментить чтобы видеть статус циферблата в реалтайме
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "t", ["time="])
