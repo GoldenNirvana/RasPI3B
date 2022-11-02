@@ -143,7 +143,7 @@ def timer(ports, start_minutes, start_seconds):
     # Вызов звукового сигнала TODO
 
 
-def secundomer(ports):
+def secundomer(ports, timetostop):
     sec = 0
     while True:
         for i in range(0, 12):
@@ -155,10 +155,7 @@ def secundomer(ports):
                 sec += 1
                 ports[i].lightOff()
                 debugShow(ports)
-
-                # тут можно написать число секунд, до скольки будет секундомер считать
-                # или можно просто стереть, тогда будет бесконечнл считать
-                if sec == 30:
+                if sec == timetostop:
                     return
 
 
@@ -172,8 +169,8 @@ def main():
         print("ПОРТОВ МНОГО ИЛИ МАЛО РАЗБЕРИСЬ\n (12)")
         exit(3)
 
-    secundomer(ports)
-    timer(ports, 1, 10)
+    secundomer(ports, 11)
+    timer(ports, 1, 11)
     # debugShow(ports)
 
     return 0
