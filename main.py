@@ -236,6 +236,42 @@ class Clock:
                 temp_hours.lightOff()
 
 
+#   Устанавливает будильник. alarm_time -
+#   либо строка формата "день час:минута", например "17 23:12".
+#   либо если очень повезёт datetime
+#   перегрузка функции на этом недоязыке, видимо, выглядит так
+def setUpAlarm(ports, alarm_time_raw):
+    if isinstance(alarm_time_raw, str):
+        alarm_time_parsed = datetime.datetime.strptime(alarm_time_raw, '%d %H:%M')
+        # Передаём только день и время, остальные параметры берём из текущего времени
+        alarm_time = datetime.datetime.now().replace(day=alarm_time_parsed.day, hour=alarm_time_parsed.hour,
+                                                     minute=alarm_time_parsed.minute)
+    else:
+        alarm_time = alarm_time_raw
+    delay = alarm_time - datetime.datetime.now()
+    if delay.total_seconds() < 0:
+        print(f"Будильник: неправильно передано время {alarm_time_parsed}")
+        return
+    threading.Timer(delay.total_seconds(), lambda: alarm(ports)).start()
+    print(f"Будильник: успешно установлен на время {alarm_time}. Зазвонит через {delay.total_seconds()} сек")
+
+
+def alarm(ports):
+    blink_interval = 0.3
+    delay_next = 0.1
+    circle_count = 30
+    for flick in range(circle_count):
+        for port in ports:
+            threading.Thread(target=port.blink, args=[blink_interval]).start()
+            time.sleep(delay_next)
+
+
+def debugInRealTime(ports):
+    while True:
+        debugShow(ports)
+        time.sleep(0.1)
+
+
 def main():
     # secundomer()
     check()
