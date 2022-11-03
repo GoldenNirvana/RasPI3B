@@ -16,15 +16,7 @@ INFO = "Программа часы:\n" \
        "timer - \n" \
        "clock - \n"  # TODO  дописать доку для своих функций
 
-allPorts = set(ioPorts)
-allPorts.update(groundPorts)
-allPorts.update(uselessPorts)
 
-
-
-def prints():
-    while True:
-        print("s")
 
 def main():
     # secundomer.py()
