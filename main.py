@@ -3,7 +3,7 @@ import threading
 
 from components.IoPort import IoPort
 from components.alarm import setUpAlarm
-from config import ioPorts, groundPorts, uselessPorts
+from config import ioPorts, groundPorts, uselessPorts, allPorts
 from hand_detect import run_until_hand_detected
 from utils import check, debugShow, debugInRealTime
 
@@ -29,8 +29,7 @@ def main():
     if len(ports) != 12:
         print("ПОРТОВ МНОГО ИЛИ МАЛО РАЗБЕРИСЬ\n (12)")
         exit(3)
-
-    debugShow(ports)
+    print(INFO)
 
     #threading.Thread(target=debugInRealTime, args=[ports]).start() # FIXME Раскомментить чтобы видеть статус циферблата в реалтайме
     while True:

@@ -19,7 +19,6 @@ def run_until_hand_detected(func):
 
     print(f"Запустили функцию, которая выключается по обнаружению руки")
     threading.Thread(target=func, daemon=True).start()
-    print(f"Запускаем проверку функции, которая выключается по обнаружению руки")
 
     while True:
         # Read video frame by frame
