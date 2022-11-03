@@ -3,6 +3,10 @@ import datetime
 import sys
 import getopt
 import threading
+import threading
+
+import cv2
+import mediapipe as mp
 
 import time
 
@@ -14,6 +18,45 @@ inUsePorts = []
 allPorts = set(ioPorts)
 allPorts.update(groundPorts)
 allPorts.update(uselessPorts)
+
+
+# Non-blocking hand detecting method run
+def run_and_stop_on_hand_detect(func):
+    threading.Thread(run_and_stop_on_hand_internal(func)).start()
+
+
+def run_and_stop_on_hand_internal(func):
+    # Initializing the Model
+    mpHands = mp.solutions.hands
+    hands = mpHands.Hands(static_image_mode=False, model_complexity=1, min_detection_confidence=0.75,
+                          min_tracking_confidence=0.75, max_num_hands=2)
+
+    # Start capturing video from webcam
+    cap = cv2.VideoCapture(0)
+
+    print(f"Запустили функцию, которая выключается по обнаружению руки")
+    threading.Thread(target=func, daemon=True).start()
+    print(f"Запускаем проверку функции, которая выключается по обнаружению руки")
+
+    while True:
+        # Read video frame by frame
+        success, img = cap.read()
+
+        # Flip the image(frame)
+        img = cv2.flip(img, 1)
+
+        # Convert BGR image to RGB image
+        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # Process the RGB image
+        results = hands.process(imgRGB)
+
+        # If hands are present in image(frame)
+        if results.multi_hand_landmarks:
+            break
+    # Display Video and when 'q'
+    # is entered, destroy the window
+    cv2.imshow('Image', img)
 
 
 def check():
@@ -252,15 +295,16 @@ def setUpAlarm(ports, alarm_time_raw):
     if delay.total_seconds() < 0:
         print(f"Будильник: неправильно передано время {alarm_time_parsed}")
         return
-    threading.Timer(delay.total_seconds(), lambda: alarm(ports)).start()
+    print(f"Будильник: успешно установлен на время {alarm_time}. Зазвонит через {delay.total_seconds()} сек")
+    run_and_stop_on_hand_detect(lambda: alarm(ports))
+    # threading.Timer(delay.total_seconds(), run_and_stop_on_hand_internal(alarm(ports))).start()
     print(f"Будильник: успешно установлен на время {alarm_time}. Зазвонит через {delay.total_seconds()} сек")
 
 
 def alarm(ports):
     blink_interval = 0.3
     delay_next = 0.1
-    circle_count = 30
-    for flick in range(circle_count):
+    while True:
         for port in ports:
             threading.Thread(target=port.blink, args=[blink_interval]).start()
             time.sleep(delay_next)
@@ -287,21 +331,21 @@ def main():
     debugShow(ports)
 
     # Будильник
-    alarm_delay_in_secs = 10
+    alarm_delay_in_secs = 1
     alarm_time = datetime.datetime.now()
     alarm_time += datetime.timedelta(seconds=alarm_delay_in_secs)
     setUpAlarm(ports, alarm_time)
-    # threading.Timer(10, debugInRealTime, args=[ports]).start() #Раскомментить чтобы видеть статус циферблата в реалтайме
+    debugInRealTime(ports)      #Раскомментить чтобы видеть статус циферблата в реалтайме
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "t", ["time="])
-    except:
-        print("Неправильно параметры передал, лох!")
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt in ("-t", "--time"):
-            setUpAlarm(ports, arg)
+    # try:
+    #     opts, args = getopt.getopt(sys.argv[1:], "t", ["time="])
+    # except:
+    #     print("Неправильно параметры передал, лох!")
+    #     sys.exit(2)
+    #
+    # for opt, arg in opts:
+    #     if opt in ("-t", "--time"):
+    #         setUpAlarm(ports, arg)
 
     return 0
 
