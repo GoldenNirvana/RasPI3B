@@ -1,16 +1,21 @@
 # import RPi.GPIO as IO
+import threading
 
-import sys
-import getopt
-from alarm import setUpAlarm
-import time
-import datetime
-import math
+from components.IoPort import IoPort
+from components.alarm import setUpAlarm
+from config import ioPorts, groundPorts, uselessPorts, allPorts
+from hand_detect import run_until_hand_detected
+from utils import check, debugShow, debugInRealTime
 
-ioPorts = [3, 5, 7, 8, 10, 11, 12, 13, 15, 16, 18, 19, 21, 22, 23, 24, 26, 29, 31, 32, 33, 35, 36, 37, 38, 40]
-groundPorts = [6, 9, 14, 20, 25, 30, 34, 39]
-uselessPorts = [1, 2, 4, 17, 27, 28]
-inUsePorts = []
+INFO = "Программа часы:\n" \
+       "help - вывести информацию о функциях программы\n" \
+       "exit - завершить программу\n" \
+       "alarm day hour:minute - поставить будильник на соответствующее время\n" \
+       "Например 21 08:20 -> будильник поставлен на 21 число время 8 часов 20 минут\n" \
+       "secundomer -\n" \
+       "timer - \n" \
+       "clock - \n"  # TODO  дописать доку для своих функций
+
 
 allPorts = set(ioPorts)
 allPorts.update(groundPorts)
@@ -217,8 +222,10 @@ def alarm(ports):
             setUpAlarm(ports, arg)
 
 
+
 def main():
-    check()
+    # secundomer.py()
+    check(allPorts, ioPorts, groundPorts, uselessPorts)
     # IO.setmode(IO.BOARD)
     ports = []
 
@@ -228,6 +235,26 @@ def main():
         print("ПОРТОВ МНОГО ИЛИ МАЛО РАЗБЕРИСЬ\n (12)")
         exit(3)
 
+    print(INFO)
+
+    #threading.Thread(target=debugInRealTime, args=[ports]).start() # FIXME Раскомментить чтобы видеть статус циферблата в реалтайме
+    while True:
+        raw_input = input()  # читаем команды в формате "команда аргументы"
+        parse_input = raw_input.partition(' ')
+        func = parse_input[0]
+        args = parse_input[2]
+        if func not in {"help", "exit", "secundomer", "alarm", "timer"}:
+            print("Неправильные аргументы")
+            print(INFO)
+            continue
+        if func == "help":
+            print(INFO)
+        if func == "exit":
+            exit(0)
+        if func == "alarm":
+            setUpAlarm(ports, args) #FIXME пример вызовы своей функции
+        # TODO дописываем свои функции
+        
     return 0
 
 
