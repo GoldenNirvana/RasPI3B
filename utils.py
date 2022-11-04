@@ -45,7 +45,7 @@ def debugShow(debugPorts):
 def debugInRealTime(ports):
     while True:
         debugShow(ports)
-        time.sleep(0.1)
+        time.sleep(1)
 
 
 def check(allPorts, ioPorts, groundPorts, uselessPorts):

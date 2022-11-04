@@ -10,6 +10,9 @@ from hand_detect import run_until_hand_detected
 #   либо строка формата "день час:минута", например "17 23:12".
 #   либо если очень повезёт datetime
 #   перегрузка функции на этом недоязыке, видимо, выглядит так
+from utils import endTIme
+
+
 def setUpAlarm(ports, alarm_time_raw):
     if isinstance(alarm_time_raw, str):
         alarm_time_parsed = datetime.datetime.strptime(alarm_time_raw, '%d %H:%M')
@@ -32,6 +35,7 @@ def alarm(ports):
     delay_next = 0.1
     while not event.isSet(): #FIXME пример проверки аларма
         for port in ports:
+            endTIme(ports)
             threading.Thread(target=port.blink, args=[blink_interval]).start()
             time.sleep(delay_next)
     event.clear()

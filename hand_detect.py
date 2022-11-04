@@ -6,7 +6,6 @@ import mediapipe as mp
 from config import event
 
 
-
 # Запускаем в отдельном потоке по аналогии с будильником
 def run_until_hand_detected(func):
     # Initializing the Model

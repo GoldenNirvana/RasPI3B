@@ -1,7 +1,8 @@
 import math
 import datetime
 import time
-from main import debugShow
+
+from utils import debugShow
 
 
 class Clock:
