@@ -1,14 +1,21 @@
 # import RPi.GPIO as IO
-import datetime
-import math
-import time
+import threading
 
+from components.IoPort import IoPort
+from components.alarm import setUpAlarm
+from config import ioPorts, groundPorts, uselessPorts, allPorts
+from hand_detect import run_until_hand_detected
+from utils import check, debugShow, debugInRealTime
 
-ioPorts = [3, 5, 7, 8, 10,
-           11, 12, 13, 15, 16, 18, 19, 21, 22, 23, 24, 26, 29, 31, 32, 33, 35, 36, 37, 38, 40]
-groundPorts = [6, 9, 14, 20, 25, 30, 34, 39]
-uselessPorts = [1, 2, 4, 17, 27, 28]
-inUsePorts = []
+INFO = "Программа часы:\n" \
+       "help - вывести информацию о функциях программы\n" \
+       "exit - завершить программу\n" \
+       "alarm day hour:minute - поставить будильник на соответствующее время\n" \
+       "Например 21 08:20 -> будильник поставлен на 21 число время 8 часов 20 минут\n" \
+       "secundomer -\n" \
+       "timer - \n" \
+       "clock - \n"  # TODO  дописать доку для своих функций
+
 
 allPorts = set(ioPorts)
 allPorts.update(groundPorts)
@@ -43,7 +50,7 @@ class IoPort(object):
 
     def lightOn(self):
         if self.__voltage == 1:
-            print('Порт ', self.__ioPort,' два раза зажгли одно и то же!!!\n')
+            print('Порт ', self.__ioPort, ' два раза зажгли одно и то же!!!\n')
             exit(3)
         self.__voltage = 1
         print('Порт номер ', self.__ioPort, ' светится\n')
@@ -59,6 +66,7 @@ class IoPort(object):
 
     def isLightOn(self):
         return self.__voltage == 1
+
 
 def outForDebug(boolean):
     if boolean:
@@ -101,6 +109,7 @@ def debugShow(debugPorts):
                 print(' ', end=' ')
         print()
 
+        
 def endTIme(ports):
     ports[0].lightOn()
     for i in range(1, 12):
@@ -170,10 +179,8 @@ def timer(ports, start_minutes, start_seconds):
     # Вызов звукового сигнала TODO
 
 
-
-def secundomer(ports):
+def secundomer(ports, timetostop):
     sec = 0
-
     while True:
         for i in range(0, 12):
             for j in range(0, 5):
@@ -184,10 +191,7 @@ def secundomer(ports):
                 sec += 1
                 ports[i].lightOff()
                 debugShow(ports)
-
-                # тут можно написать число секунд, до скольки будет секундомер считать
-                # или можно просто стереть, тогда будет бесконечнл считать
-                if sec == 30:
+                if sec == timetostop:
                     return
 
 
@@ -219,22 +223,31 @@ class Clock:
                 temp_hours.lightOff()
 
 
+def alarm(ports):
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "t", ["time="])
+    except:
+        print("Неправильно параметры передал, лох!")
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-t", "--time"):
+            setUpAlarm(ports, arg)
+
+
+
 def main():
-    check()
+    # secundomer.py()
+    check(allPorts, ioPorts, groundPorts, uselessPorts)
     # IO.setmode(IO.BOARD)
     ports = []
-    for i in range(0, 12):
-        ports.append(IoPort(ioPorts[i]))
-    if len(ports) != 12:
-        print("ПОРТОВ МНОГО ИЛИ МАЛО РАЗБЕРИСЬ\n (12)")
-        exit(3)
-
 
     for i in range(0, 12):
         ports.append(IoPort(ioPorts[i]))
     if len(ports) != 12:
         print("ПОРТОВ МНОГО ИЛИ МАЛО РАЗБЕРИСЬ\n (12)")
         exit(3)
+
 
     # debugShow(ports)
 
@@ -244,6 +257,27 @@ def main():
 
 
 
+    print(INFO)
+
+
+    #threading.Thread(target=debugInRealTime, args=[ports]).start() # FIXME Раскомментить чтобы видеть статус циферблата в реалтайме
+    while True:
+        raw_input = input()  # читаем команды в формате "команда аргументы"
+        parse_input = raw_input.partition(' ')
+        func = parse_input[0]
+        args = parse_input[2]
+        if func not in {"help", "exit", "secundomer", "alarm", "timer"}:
+            print("Неправильные аргументы")
+            print(INFO)
+            continue
+        if func == "help":
+            print(INFO)
+        if func == "exit":
+            exit(0)
+        if func == "alarm":
+            setUpAlarm(ports, args) #FIXME пример вызовы своей функции
+        # TODO дописываем свои функции
+        
     return 0
 
 
