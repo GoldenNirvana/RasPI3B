@@ -46,7 +46,7 @@ def debugShow(debugPorts):
 def debugInRealTime(ports):
     while True:
         debugShow(ports)
-        time.sleep(1)
+        time.sleep(0.4)
 
 
 def check(allPorts, ioPorts, groundPorts, uselessPorts):
@@ -58,14 +58,6 @@ def check(allPorts, ioPorts, groundPorts, uselessPorts):
         exit(1)
 
 
-def endTIme(ports):
-    ports[0].lightOn()
-    for i in range(1, 12):
-        debugShow(ports)
-        time.sleep(0.1)
-        ports[i].lightOn()
-        debugShow(ports)
-        time.sleep(0.1)
-        ports[i - 1].lightOff()
-    ports[11].lightOff()
-    debugShow(ports)
+def clearPorts(ports):
+    for i in range(0, 12):
+        ports[i].lightOff()

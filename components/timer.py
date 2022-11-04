@@ -1,9 +1,9 @@
 import threading
 import time
 
-from config import eventForTimer
+from config import event, eventForClock
 from hand_detect import run_until_hand_detected
-from utils import debugShow
+from utils import debugShow, clearPorts
 
 
 def timer(ports, start_minutes, start_seconds):
@@ -37,7 +37,7 @@ def timer(ports, start_minutes, start_seconds):
                         ports[sec_port].lightOn()
                     num_iter = num_iter + 1
                     is_equals = True
-                    debugShow(ports)
+                    #debugShow(ports)
                     time.sleep(0.3)
                     ports[sec_port].lightOff()
                     time.sleep(0.7)
@@ -45,7 +45,7 @@ def timer(ports, start_minutes, start_seconds):
             else:
                 while sec < sec_delta:  # Цикл по 5 секундам (мигание одной лампочки)
                     ports[sec_port].lightOn()
-                    debugShow(ports)
+                    #debugShow(ports)
                     time.sleep(0.3)
                     ports[sec_port].lightOff()
                     time.sleep(0.7)
@@ -67,9 +67,11 @@ def timer(ports, start_minutes, start_seconds):
 def endOfTimer(ports):
     blink_interval = 0.3
     delay_next = 0.1
-    while not eventForTimer.isSet():
+    while not event.isSet():
         for port in ports:
             threading.Thread(target=port.blink, args=[blink_interval]).start()
             time.sleep(delay_next)
-    eventForTimer.clear()
+    event.clear()
+    eventForClock.clear()
+    clearPorts(ports)
     print("конец таймера")

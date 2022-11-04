@@ -2,7 +2,7 @@ import datetime
 import threading
 import time
 
-from config import event
+from config import event, eventForClock
 from hand_detect import run_until_hand_detected
 
 
@@ -10,7 +10,7 @@ from hand_detect import run_until_hand_detected
 #   либо строка формата "день час:минута", например "17 23:12".
 #   либо если очень повезёт datetime
 #   перегрузка функции на этом недоязыке, видимо, выглядит так
-from utils import endTIme
+from utils import clearPorts
 
 
 def setUpAlarm(ports, alarm_time_raw):
@@ -38,4 +38,6 @@ def alarm(ports):
             threading.Thread(target=port.blink, args=[blink_interval]).start()
             time.sleep(delay_next)
     event.clear()
+    eventForClock.clear()
+    clearPorts(ports)
     print("Замечена рука, функция остановилась")

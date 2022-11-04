@@ -27,9 +27,7 @@ class IoPort(object):
         try:
             if self.__voltage == 1:
                 print('Два раза зажгли одно и то же!!!\n')
-                exit(3)
             self.__voltage = 1
-            # print('Порт номер ', self.__ioPort, ' светится\n')
             # IO.output(self.__ioPort, self.__voltage)
         finally:
             self.__lock.release()
@@ -39,9 +37,7 @@ class IoPort(object):
         try:
             if self.__voltage == 0:
                 print('Два раза выключили одно и то же!!!\n')
-                exit(3)
             self.__voltage = 0
-            # print('Порт номер ', self.__ioPort, ' мрак\n')
         # IO.output(self.__ioPort, 0)
         finally:
             self.__lock.release()

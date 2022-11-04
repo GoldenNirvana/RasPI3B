@@ -4,10 +4,10 @@ import threading
 from components import timer
 from components.IoPort import IoPort
 from components.alarm import setUpAlarm
-from components.clock import Clock
+from components.clock import doClock
 from components.timer import timer
-from components.secundomer import secundomer
-from config import ioPorts, groundPorts, uselessPorts, allPorts
+from components.secundomer import stopwatch
+from config import ioPorts, groundPorts, uselessPorts, allPorts, eventForClock
 from utils import *
 
 INFO = "Программа часы:\n" \
@@ -15,7 +15,7 @@ INFO = "Программа часы:\n" \
        "exit - завершить программу\n" \
        "alarm day hour:minute - поставить будильник на соответствующее время\n" \
        "Например 21 08:20 -> будильник поставлен на 21 число время 8 часов 20 минут\n" \
-       "stopwatch - время через которое секундомер отключится\n" \
+       "sw - время через которое секундомер отключится\n" \
        "timer minutes:seconds - таймер на указанное время\n" \
        "clock - просто режим работы часов"  # TODO  дописать доку для своих функций
 
@@ -31,14 +31,13 @@ def main():
         exit(3)
 
     print(INFO)
-
-    #threading.Thread(target=debugInRealTime, args=[ports]).start() # FIXME Раскомментить чтобы видеть статус циферблата в реалтайме
+    threading.Thread(target=debugInRealTime, args=[ports]).start() # FIXME Раскомментить чтобы видеть статус циферблата в реалтайме
     while True:
         raw_input = input()  # читаем команды в формате "команда аргументы"
         parse_input = raw_input.partition(' ')
         func = parse_input[0]
         args = parse_input[2]
-        if func not in {"help", "exit", "stopwatch", "alarm", "timer", "clock"}:
+        if func not in {"help", "exit", "sw", "alarm", "timer", "clock"}:
             print("Неправильные аргументы")
             print(INFO)
             continue
@@ -51,9 +50,9 @@ def main():
         if func == "timer":
             timer(ports, int(args[0]), int(args[2] + args[3]))
         if func == "clock":
-            Clock(ports)
-        if func == "stopwatch":
-            secundomer(ports, int(args))
+            doClock(ports)
+        if func == "sw":
+            stopwatch(ports, int(args))
     return 0
 
 
