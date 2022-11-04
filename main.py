@@ -1,7 +1,6 @@
 # import RPi.GPIO as IO
 
 import threading
-
 from components import timer
 from components.IoPort import IoPort
 from components.alarm import setUpAlarm
@@ -21,11 +20,6 @@ INFO = "Программа часы:\n" \
        "clock - просто режим работы часов"  # TODO  дописать доку для своих функций
 
 
-allPorts = set(ioPorts)
-allPorts.update(groundPorts)
-allPorts.update(uselessPorts)
-
-
 def main():
     check(allPorts, ioPorts, groundPorts, uselessPorts)
     # IO.setmode(IO.BOARD)
@@ -37,7 +31,6 @@ def main():
         exit(3)
 
     print(INFO)
-
 
     #threading.Thread(target=debugInRealTime, args=[ports]).start() # FIXME Раскомментить чтобы видеть статус циферблата в реалтайме
     while True:
@@ -54,7 +47,7 @@ def main():
         if func == "exit":
             exit(0)
         if func == "alarm":
-            setUpAlarm(ports, args) #FIXME пример вызовы своей функции
+            setUpAlarm(ports, args)
         if func == "timer":
             timer(ports, int(args[0]), int(args[2] + args[3]))
         if func == "clock":

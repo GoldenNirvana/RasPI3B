@@ -33,9 +33,8 @@ def setUpAlarm(ports, alarm_time_raw):
 def alarm(ports):
     blink_interval = 0.3
     delay_next = 0.1
-    while not event.isSet(): #FIXME пример проверки аларма
+    while not event.isSet():
         for port in ports:
-            endTIme(ports)
             threading.Thread(target=port.blink, args=[blink_interval]).start()
             time.sleep(delay_next)
     event.clear()

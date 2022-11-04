@@ -1,5 +1,6 @@
 import time
 
+
 def outForDebug(boolean):
     if boolean:
         print(1, end=' ')
