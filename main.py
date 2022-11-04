@@ -101,6 +101,18 @@ def debugShow(debugPorts):
                 print(' ', end=' ')
         print()
 
+def endTIme(ports):
+    ports[0].lightOn()
+    for i in range(1, 12):
+        debugShow(ports)
+        time.sleep(0.1)
+        ports[i].lightOn()
+        debugShow(ports)
+        time.sleep(0.1)
+        ports[i-1].lightOff()
+    ports[11].lightOff()
+    debugShow(ports)
+
 
 def timer(ports, start_minutes, start_seconds):
     if type(start_minutes) != int or type(start_seconds) != int:
@@ -226,7 +238,9 @@ def main():
 
     # debugShow(ports)
 
-    cl = Clock(ports)
+    # cl = Clock(ports)
+
+    endTIme(ports)
 
 
 
