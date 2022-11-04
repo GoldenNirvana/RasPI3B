@@ -42,11 +42,11 @@ def debugShow(debugPorts):
         print()
 
 
-
 def debugInRealTime(ports):
     while True:
         debugShow(ports)
         time.sleep(0.1)
+
 
 def check(allPorts, ioPorts, groundPorts, uselessPorts):
     if len(allPorts) != 40:
@@ -55,3 +55,16 @@ def check(allPorts, ioPorts, groundPorts, uselessPorts):
     if len(ioPorts) != 26 or len(groundPorts) != 8 or len(uselessPorts) != 6:
         print("ААААААААААА ПЛАТА ГОРИТ ТУШИ (IO)\n")
         exit(1)
+
+
+def endTIme(ports):
+    ports[0].lightOn()
+    for i in range(1, 12):
+        debugShow(ports)
+        time.sleep(0.1)
+        ports[i].lightOn()
+        debugShow(ports)
+        time.sleep(0.1)
+        ports[i - 1].lightOff()
+    ports[11].lightOff()
+    debugShow(ports)
