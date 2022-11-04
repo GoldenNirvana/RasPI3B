@@ -3,7 +3,7 @@ import threading
 import cv2
 import mediapipe as mp
 
-from config import event
+from config import event, eventForTimer
 
 
 # Запускаем в отдельном потоке по аналогии с будильником
@@ -35,6 +35,7 @@ def run_until_hand_detected(func):
         # If hands are present in image(frame)
         if results.multi_hand_landmarks:
             event.set()
+            eventForTimer.set()
             break
         #cv2.imshow('Image', img)
         cv2.waitKey(1)

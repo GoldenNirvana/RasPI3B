@@ -1,5 +1,8 @@
+import threading
 import time
 
+from config import eventForTimer
+from hand_detect import run_until_hand_detected
 from utils import debugShow
 
 
@@ -55,5 +58,18 @@ def timer(ports, start_minutes, start_seconds):
         if minutes_port != 0:
             ports[minutes_port].lightOff()
         minutes_port = minutes_port - 1
-    print("КОНЕЦ")
-    # Вызов звукового сигнала TODO
+
+    print("помашите рукой")
+
+    threading.Timer(interval=1, function=run_until_hand_detected, args=[lambda: endOfTimer(ports)]).start()
+
+
+def endOfTimer(ports):
+    blink_interval = 0.3
+    delay_next = 0.1
+    while not eventForTimer.isSet():
+        for port in ports:
+            threading.Thread(target=port.blink, args=[blink_interval]).start()
+            time.sleep(delay_next)
+    eventForTimer.clear()
+    print("конец таймера")
