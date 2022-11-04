@@ -109,6 +109,19 @@ def debugShow(debugPorts):
                 print(' ', end=' ')
         print()
 
+        
+def endTIme(ports):
+    ports[0].lightOn()
+    for i in range(1, 12):
+        debugShow(ports)
+        time.sleep(0.1)
+        ports[i].lightOn()
+        debugShow(ports)
+        time.sleep(0.1)
+        ports[i-1].lightOff()
+    ports[11].lightOff()
+    debugShow(ports)
+
 
 def timer(ports, start_minutes, start_seconds):
     if type(start_minutes) != int or type(start_seconds) != int:
@@ -235,7 +248,17 @@ def main():
         print("ПОРТОВ МНОГО ИЛИ МАЛО РАЗБЕРИСЬ\n (12)")
         exit(3)
 
+
+    # debugShow(ports)
+
+    # cl = Clock(ports)
+
+    endTIme(ports)
+
+
+
     print(INFO)
+
 
     #threading.Thread(target=debugInRealTime, args=[ports]).start() # FIXME Раскомментить чтобы видеть статус циферблата в реалтайме
     while True:
